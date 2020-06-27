@@ -1,0 +1,86 @@
+CloudWatch
+
+Basic
+CloudWatch 是什么？我们为什么要使用CloudWatch？
+CloudWatch中的metrics是什么？包括哪些种类？我们可以如何使用metrics？
+CloudWatch Events是什么？可以应用在那些场景。
+相关概念理解：metrics，periods，namespace，count，dimensions，statistics。
+
+
+Practice
+1 创建cloudwatch event rules，每分钟自动触发Lambda（Lambda功能需要自己实现，向cloudwatch metrics里push自定义的metrics），
+设置alarm检测task中定义的metric，自定义并监控条件使alarm触发阈值，alarm出发SNS，SNS发告警到邮箱。
+
+2 创建cloudwatch event rules，每分钟自动触发Lambda（输出固定格式的log message）。
+为lambda log创建metric filter，匹配log message，创建新的metric，自定义并监控条件使alarm触发阈值，alarm出发SNS，SNS发告警到邮箱。	
+
+Output：
+两个cloudformation文件
+部署cloudformation后，功能完整，邮箱可以收到报警
+
+Reference：
+https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/WhatIsCloudWatchLogs.html
+https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/WhatIsCloudWatch.html
+https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/working_with_metrics.html
+https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/AlarmThatSendsEmail.html
+https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/quickref-cloudwatch.html
+https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/quickref-sns.html
+https://aws.amazon.com/cloudwatch/faqs/
+
+
+1 CloudWatch 是什么？我们为什么要使用CloudWatch？ 
+Amazon CloudWatch 实时监控您的 Amazon Web Services (AWS) 资源以及您在 AWS 中运行的应用程序。您可以使用 CloudWatch 收集和跟踪指标，这些指标是您可衡量的相关资源和应用程序的变量。
+CloudWatch 主页自动显示有关您使用的每项 AWS 服务的指标。此外，您还可以创建自定义控制面板，以显示有关自定义应用程序的指标，并显示您选择的指标的自定义集合。
+您可以创建警报，这些警报监视指标，当超出阈值时，它们会发送通知或者对您所监控的资源自动进行更改。例如，您可以监控您的 Amazon EC2 实例的 CPU 使用率以及磁盘读写情况，然后使用此数据确定您是否应启动其他实例来处理增加的负载。您还可以使用此数据停止未完全利用的实例以节省开支。
+您可通过使用 CloudWatch 全面地了解资源使用率、应用程序性能和运行状况。
+
+什么是 Amazon CloudWatch Logs？
+您可以使用 Amazon CloudWatch Logs 来监控、存储和访问来自 Amazon Elastic Compute Cloud (Amazon EC2) 实例、AWS CloudTrail、Route 53 和其他来源的日志文件。
+
+通过使用 CloudWatch Logs，您可以在一个高度可扩展的服务中集中管理您使用的所有系统、应用程序和 AWS 服务的日志。然后，您可以轻松查看这些日志，搜索这些日志以查找特定的错误代码或模式，
+根据特定字段筛选这些日志，或者安全地存档这些日志以供将来分析。通过使用 CloudWatch Logs，您可以将所有日志作为按时间排序的单个一致的事件流进行查看而无论其来源如何，
+并且您可以查询这些日志并根据其他维度对其进行排序，按特定字段对其进行分组，使用强大的查询语言创建自定义计算以及在控制面板中显示日志数据。
+
+2  CloudWatch中的metrics是什么？包括哪些种类？我们可以如何使用metrics？
+指标是关于您的系统性能的数据。默认情况下，许多服务都提供资源（例如，Amazon EC2 实例、Amazon EBS 卷和 Amazon RDS 数据库实例）的免费指标。您也可以启用对某些资源（如 Amazon EC2 实例）的详细监控，或发布自己的应用程序指标。Amazon CloudWatch 可加载您的账户中的所有指标（包括您提供的 AWS 资源指标和应用程序指标）以进行搜索、绘制图表及设置警报。
+指标数据的保留期限为 15 个月，这使您能够查看最新数据和历史数据。
+ 
+3 CloudWatch Events是什么？可以应用在那些场景。
+Amazon EventBridge is the preferred way to manage your events. CloudWatch Events and EventBridge are the same underlying service and API, but EventBridge provides more features. Changes you make in either CloudWatch or EventBridge will appear in each console.
+
+Amazon EC2 instances
+AWS Lambda functions
+Streams in Amazon Kinesis Data Streams
+Delivery streams in Amazon Kinesis Data Firehose
+Log groups in Amazon CloudWatch Logs
+
+4
+相关概念理解：metrics，periods，namespace，count，dimensions，statistics。
+Namespaces
+A namespace is a container for CloudWatch metrics. Metrics in different namespaces are isolated from each other, so that metrics from different applications are not mistakenly aggregated into the same statistics.
+There is no default namespace. You must specify a namespace for each data point you publish to CloudWatch. You can specify a namespace name when you create a metric. These names must contain valid XML characters, and be fewer than 256 characters in length. Possible characters are: alphanumeric characters (0-9A-Za-z), period (.), hyphen (-), underscore (_), forward slash (/), hash (#), and colon (:).
+The AWS namespaces typically use the following naming convention: AWS/service. For example, Amazon EC2 uses the AWS/EC2 namespace. For the list of AWS namespaces, see AWS Services That Publish CloudWatch Metrics.
+
+Metrics
+Metrics are the fundamental concept in CloudWatch. A metric represents a time-ordered set of data points that are published to CloudWatch. Think of a metric as a variable to monitor, and the data points as representing the values of that variable over time. For example, the CPU usage of a particular EC2 instance is one metric provided by Amazon EC2. The data points themselves can come from any application or business activity from which you collect data.
+AWS services send metrics to CloudWatch, and you can send your own custom metrics to CloudWatch. You can add the data points in any order, and at any rate you choose. You can retrieve statistics about those data points as an ordered set of time-series data.
+Metrics exist only in the Region in which they are created. Metrics cannot be deleted, but they automatically expire after 15 months if no new data is published to them. Data points older than 15 months expire on a rolling basis; as new data points come in, data older than 15 months is dropped.
+Metrics are uniquely defined by a name, a namespace, and zero or more dimensions. Each data point in a metric has a time stamp, and (optionally) a unit of measure. You can retrieve statistics from CloudWatch for any metric.
+
+Periods
+A period is the length of time associated with a specific Amazon CloudWatch statistic. Each statistic represents an aggregation of the metrics data collected for a specified period of time. Periods are defined in numbers of seconds, and valid values for period are 1, 5, 10, 30, or any multiple of 60. For example, to specify a period of six minutes, use 360 as the period value. You can adjust how the data is aggregated by varying the length of the period. A period can be as short as one second or as long as one day (86,400 seconds). The default value is 60 seconds.
+
+Count
+Each statistic has a unit of measure. Example units include Bytes, Seconds, Count, and Percent. 
+
+Dimensions
+A dimension is a name/value pair that is part of the identity of a metric. You can assign up to 10 dimensions to a metric.
+Every metric has specific characteristics that describe it, and you can think of dimensions as categories for those characteristics. Dimensions help you design a structure for your statistics plan. Because dimensions are part of the unique identifier for a metric, whenever you add a unique name/value pair to one of your metrics, you are creating a new variation of that metric.
+AWS services that send data to CloudWatch attach dimensions to each metric. You can use dimensions to filter the results that CloudWatch returns. For example, you can get statistics for a specific EC2 instance by specifying the InstanceId dimension when you search for metrics.
+For metrics produced by certain AWS services, such as Amazon EC2, CloudWatch can aggregate data across dimensions. For example, if you search for metrics in the AWS/EC2 namespace but do not specify any dimensions, CloudWatch aggregates all data for the specified metric to create the statistic that you requested. CloudWatch does not aggregate across dimensions for your custom metrics.
+
+失败尝试：
+aws cloudformation --region ap-southeast-1 create-stack --stack-name yangFengCloudwatchWithLambdaStack --template-body file://yangFengCloudwatchWithLambdaTemplate.yml
+An error occurred (InsufficientCapabilitiesException) when calling the CreateStack operation: Requires capabilities : [CAPABILITY_IAM]
+
+

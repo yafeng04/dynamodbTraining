@@ -1,0 +1,14 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: cloudwatch homework No. 1
+Resources:
+  YangFengMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: "/aws/lambda/yangFengFunctionNameCloudFormation"
+      FilterPattern: "Memory Size"
+      MetricTransformations:
+        - MetricValue: "1"
+          MetricNamespace: "yang-feng-MetricFilter-namespace-cloudformation"
+          MetricName: "yang-feng-MetricFilter-metric-cloudformation"
+
+# stackName   yangFeng3Stack1

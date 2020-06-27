@@ -1,0 +1,99 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: cloudwatch homework No. 1
+Resources:
+    YangFengSNSTopicCloudFormation:
+        Type: AWS::SNS::Topic
+        Properties:
+            Subscription:
+                - Endpoint: yang.feng@thoughtworks.com
+                  Protocol: email
+            TopicName: YangFengMetricFilterSNSTopic
+
+    YangFengAlarmCloudFormation:
+        Type: AWS::CloudWatch::Alarm
+        Properties:
+            AlarmName: YangFengMetricFilterAlarmCloudFormation
+            AlarmActions:
+            - !Ref YangFengSNSTopicCloudFormation
+            OKActions:
+            - !Ref YangFengSNSTopicCloudFormation
+            Namespace: yang-feng-MetricFilter-namespace-cloudformation
+            Statistic: Maximum
+            Period: 60
+            EvaluationPeriods: 1
+            Threshold: 1
+            ComparisonOperator: GreaterThanOrEqualToThreshold
+            TreatMissingData: "notBreaching"
+            MetricName: yang-feng-MetricFilter-metric-cloudformation
+
+    YangFengLambdaRoleCloudFormation:
+        Type: 'AWS::IAM::Role'
+        Properties:
+            AssumeRolePolicyDocument:
+                Version: 2012-10-17
+                Statement:
+                    - Effect: Allow
+                      Principal:
+                          Service:
+                              - lambda.amazonaws.com
+                      Action:
+                          - 'sts:AssumeRole'
+            ManagedPolicyArns:
+            - arn:aws:iam::aws:policy/CloudWatchFullAccess
+
+    YangFengLambdaCloudFormation:
+        Type: AWS::Lambda::Function
+        DependsOn: YangFengLambdaRoleCloudFormation
+        Properties:
+            Runtime: python2.7
+            Role:
+                Fn::GetAtt:
+                    - "YangFengLambdaRoleCloudFormation"
+                    - "Arn"
+            Handler: index.lambda_handler
+            FunctionName: yangFengFunctionNameCloudFormation
+            Code:
+                ZipFile: |
+                    import boto3
+                    import random
+                    def lambda_handler(event, context):
+                        print('#####')
+
+
+    YangFengScheduledRuleCloudFormation:
+        Type: AWS::Events::Rule
+        Properties:
+            Description: "YangFengScheduledRuleCloudFormation"
+            ScheduleExpression: "rate(1 minute)"
+            State: "ENABLED"
+            Targets:
+                - Arn:
+                      Fn::GetAtt:
+                          - "YangFengLambdaCloudFormation"
+                          - "Arn"
+                  Id: "TargetFunctionAnyId"
+
+    YangFengPermissionForEventsToInvokeLambda:
+        Type: AWS::Lambda::Permission
+        Properties:
+            FunctionName:
+                Ref: "YangFengLambdaCloudFormation"
+            Action: "lambda:InvokeFunction"
+            Principal: "events.amazonaws.com"
+            SourceArn:
+                Fn::GetAtt:
+                    - "YangFengScheduledRuleCloudFormation"
+                    - "Arn"
+
+    YangFengMetricFilter:
+        Type: AWS::Logs::MetricFilter
+        DependsOn: YangFengLambdaCloudFormation
+        Properties:
+            LogGroupName: "/aws/lambda/yangFengFunctionNameCloudFormation"
+            FilterPattern: "[Memory Size]"
+            MetricTransformations:
+                - MetricValue: "1"
+                  MetricNamespace: "yang-feng-MetricFilter-namespace-cloudformation"
+                  MetricName: "yang-feng-MetricFilter-metric-cloudformation"
+
+# stackName   yangFengCloudwatchWithLambdaQ2Stack
